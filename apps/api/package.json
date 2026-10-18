@@ -1,0 +1,37 @@
+{
+    "name":  "pizza-api",
+    "version":  "0.1.0",
+    "private":  true,
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "tsx watch --env-file=.env.local src/server.ts",
+                    "start":  "tsx --env-file=.env.local src/server.ts",
+                    "db:migrate":  "tsx --env-file=.env.local src/cli/db.ts migrate",
+                    "db:seed":  "tsx --env-file=.env.local src/cli/db.ts seed",
+                    "db:reset":  "tsx --env-file=.env.local src/cli/db.ts reset",
+                    "test":  "vitest run --coverage",
+                    "typecheck":  "tsc --noEmit",
+                    "staff:upsert":  "tsx --env-file=.env.local src/cli/staff.ts",
+                    "db:app-role":  "tsx --env-file=.env.local src/cli/db.ts app-role",
+                    "audit":  "npm audit --audit-level=moderate"
+                },
+    "devDependencies":  {
+                            "@types/node":  "^24.0.0",
+                            "@types/pg":  "^8.23.1",
+                            "@types/ws":  "^8.18.2",
+                            "@vitest/coverage-v8":  "^5.0.5",
+                            "tsx":  "^4.23.15",
+                            "typescript":  "^5.4.5",
+                            "vitest":  "^5.0.5"
+                        },
+    "dependencies":  {
+                         "@fastify/cors":  "^11.3.1",
+                         "@fastify/rate-limit":  "^11.2.1",
+                         "@fastify/static":  "^10.1.6",
+                         "@fastify/websocket":  "^11.3.4",
+                         "fastify":  "^5.12.7",
+                         "pg":  "^8.23.1",
+                         "ws":  "^8.22.0",
+                         "zod":  "^4.6.7"
+                     }
+}

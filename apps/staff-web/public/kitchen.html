@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>M Pizza - Kitchen</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1 data-i18n="appName">إم بيتزا</h1>
+      <nav class="links">
+        <a href="kitchen.html" aria-current="page" data-i18n="kitchen">المطبخ</a>
+        <a href="admin.html" id="admin-link" hidden data-i18n="admin">الإدارة</a>
+      </nav>
+      <span class="spacer"></span>
+      <span class="chip" id="connection" data-state="online" data-i18n="connected">متصل</span>
+      <button type="button" id="sound" data-i18n="sound">تفعيل الصوت</button>
+      <button type="button" id="lang">English</button>
+      <button type="button" id="signout" data-i18n="signOut">خروج</button>
+    </header>
+
+    <main class="board" id="board" aria-live="polite"></main>
+
+    <dialog id="cancel-dialog" aria-labelledby="cancel-title">
+      <form method="dialog" id="cancel-form">
+        <h2 id="cancel-title" data-i18n="cancel">إلغاء الطلب</h2>
+        <div class="field">
+          <label for="cancel-reason" data-i18n="cancelReason">سبب الإلغاء</label>
+          <textarea id="cancel-reason" rows="3" maxlength="200" required></textarea>
+        </div>
+        <div class="buttons">
+          <button type="button" id="cancel-back" data-i18n="back">رجوع</button>
+          <button type="submit" class="danger" id="cancel-confirm" data-i18n="confirm">تأكيد</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" role="status" hidden></div>
+    <script type="module" src="js/kitchen.js"></script>
+  </body>
+</html>

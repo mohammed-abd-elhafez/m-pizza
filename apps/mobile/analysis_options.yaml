@@ -1,0 +1,16 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - lib/l10n/gen/**
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+  errors:
+    avoid_print: error
+
+linter:
+  rules:
+    avoid_print: true
+    prefer_single_quotes: true
