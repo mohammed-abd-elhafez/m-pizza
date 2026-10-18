@@ -5,11 +5,14 @@ import 'auth/auth_notifier.dart';
 import 'auth/login_screen.dart';
 import 'cart/cart_notifier.dart';
 import 'cart/cart_screen.dart';
+import 'checkout/location_screen.dart';
 import 'l10n/l10n.dart';
 import 'l10n/locale_notifier.dart';
 import 'menu/menu_notifier.dart';
 import 'menu/menu_screen.dart';
 import 'orders/orders_screen.dart';
+import 'theme/app_theme.dart';
+import 'theme/product_assets.dart';
 
 /// App frame: menu / cart / orders tabs, language toggle and account menu.
 class HomeShell extends StatefulWidget {
@@ -42,8 +45,30 @@ class _HomeShellState extends State<HomeShell> {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text(l.appTitle),
+        titleSpacing: 12,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(ProductAssets.logoMark, width: 34, height: 34),
+            const SizedBox(width: 8),
+            Text(
+              l.appTitle,
+              style: const TextStyle(
+                color: AppTheme.deepRed,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
         actions: [
+          IconButton(
+            key: const Key('header-location'),
+            tooltip: l.locationTitle,
+            icon: const Icon(Icons.location_on_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const LocationScreen()),
+            ),
+          ),
           Tooltip(
             message: l.languageTooltip,
             child: TextButton(
@@ -51,7 +76,10 @@ class _HomeShellState extends State<HomeShell> {
               onPressed: context.read<LocaleNotifier>().toggle,
               child: Text(
                 l.switchLanguageLabel,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(
+                  color: AppTheme.deepRed,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

@@ -266,6 +266,60 @@ abstract class AppLocalizations {
   /// **'We couldn\'t load the menu.'**
   String get menuLoadFailed;
 
+  /// No description provided for @menuHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh from the oven'**
+  String get menuHeroEyebrow;
+
+  /// No description provided for @menuHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pizza for your people'**
+  String get menuHeroTitle;
+
+  /// No description provided for @menuHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your favourites, customize your pizza, and make it yours.'**
+  String get menuHeroBody;
+
+  /// No description provided for @menuHeroCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your pizza'**
+  String get menuHeroCta;
+
+  /// No description provided for @menuFeatured.
+  ///
+  /// In en, this message translates to:
+  /// **'Made for sharing'**
+  String get menuFeatured;
+
+  /// No description provided for @menuLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let us find you faster'**
+  String get menuLocationTitle;
+
+  /// No description provided for @menuLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your location to see delivery fees and the estimated time.'**
+  String get menuLocationBody;
+
+  /// No description provided for @menuLocationSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery location set'**
+  String get menuLocationSet;
+
+  /// No description provided for @menuLocationCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Set location'**
+  String get menuLocationCta;
+
   /// No description provided for @itemFromPrice.
   ///
   /// In en, this message translates to:
@@ -625,6 +679,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivery location'**
   String get locationTitle;
+
+  /// No description provided for @locationPrivacyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'We use your location only to calculate delivery fees and the estimated time.'**
+  String get locationPrivacyNote;
 
   /// No description provided for @locationUseCurrent.
   ///

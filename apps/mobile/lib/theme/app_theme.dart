@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 /// Warm pizza-red / cream theme. Text colours keep WCAG AA contrast.
 class AppTheme {
-  static const Color red = Color(0xFFB71C1C);
-  static const Color cream = Color(0xFFFFF6E8);
-  static const Color ink = Color(0xFF2B1B17);
+  static const Color red = Color(0xFFC74634);
+  static const Color deepRed = Color(0xFF8F2C24);
+  static const Color cream = Color(0xFFFFF8EE);
+  static const Color ink = Color(0xFF27211E);
+  static const Color cheese = Color(0xFFF0C75E);
+  static const Color olive = Color(0xFF68734F);
 
   static ThemeData light() {
     final scheme =
@@ -14,43 +17,80 @@ class AppTheme {
         ).copyWith(
           primary: red,
           onPrimary: Colors.white,
+          secondary: cheese,
+          onSecondary: ink,
+          tertiary: olive,
           surface: cream,
           onSurface: ink,
-          error: const Color(0xFF8E0000),
+          error: deepRed,
         );
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: cream,
       appBarTheme: const AppBarTheme(
-        backgroundColor: red,
-        foregroundColor: Colors.white,
+        backgroundColor: cream,
+        foregroundColor: ink,
         centerTitle: false,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       cardTheme: CardThemeData(
         color: Colors.white,
-        elevation: 1,
+        elevation: 0,
         margin: const EdgeInsets.symmetric(vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: ink.withValues(alpha: 0.06)),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(48, 48),
+          backgroundColor: red,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          foregroundColor: red,
+          side: BorderSide(color: red.withValues(alpha: 0.28)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: ink.withValues(alpha: 0.08)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: red, width: 2),
+        ),
       ),
       navigationBarTheme: const NavigationBarThemeData(
         backgroundColor: Colors.white,
+        indicatorColor: Color(0xFFFFE1DB),
+        elevation: 0,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: Colors.white,
+        selectedColor: const Color(0xFFFFE1DB),
+        side: BorderSide(color: ink.withValues(alpha: 0.08)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        labelStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
   }

@@ -11,7 +11,7 @@ anywhere and no real orders are placed. Any 6-digit code signs you in.)
 | Folder | What |
 |---|---|
 | `apps/api` | Node 24 + TypeScript + Fastify 5 + PostgreSQL. Pricing, order state machine, OTP login, staff roles, payments webhook, admin, live tracking over WebSocket. 228 tests, including a suite that runs the whole app under a least-privilege database role. |
-| `apps/mobile` | Flutter customer app (menu, half-and-half pizza customiser, cart priced by the server, OTP login, live order tracking, reorder). Arabic/English, RTL. 148 tests. |
+| `apps/mobile` | Flutter customer app (branded menu with local food imagery, half-and-half pizza customiser, cart priced by the server, OTP login, live order tracking, reorder). Arabic/English, RTL. 148 tests. |
 | `apps/staff-web` | Kitchen board and admin pages (plain ES modules, strict CSP, no build step). Served by the API at `/staff/`. |
 | `db` | Numbered SQL migrations, demo seed, least-privilege role definition. |
 | `docs` | `api.md` (API contract) and architecture decision records. |
@@ -37,6 +37,14 @@ flutter run -d chrome --dart-define=API_BASE_URL=http://127.0.0.1:3000
 # or the self-contained demo, no backend needed:
 flutter run -d chrome --dart-define=DEMO=true
 ```
+
+### Delivery location
+
+The customer app asks for the device location only after the customer chooses delivery. It uses `geolocator` on Android, iOS and web, validates the returned coordinates, and falls back to quick Cairo/Giza points or manual latitude/longitude entry when permission is denied or location services are disabled. Android declares coarse/fine location permissions and iOS shows a clear “while in use” privacy message. The public demo never sends the location to a real server.
+
+### Visual assets
+
+The customer app includes an original M Pizza mark and optimized local product photography under `apps/mobile/assets/`. Local assets keep the public demo fast and independent of an image CDN; production can replace the demo images with approved CMS URLs through the existing `imageUrl` field.
 
 ## Security notes
 

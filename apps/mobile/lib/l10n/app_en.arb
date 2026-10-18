@@ -33,6 +33,15 @@
 
   "menuEmpty": "The menu is empty right now.",
   "menuLoadFailed": "We couldn't load the menu.",
+  "menuHeroEyebrow": "Fresh from the oven",
+  "menuHeroTitle": "Pizza for your people",
+  "menuHeroBody": "Pick your favourites, customize your pizza, and make it yours.",
+  "menuHeroCta": "Pick your pizza",
+  "menuFeatured": "Made for sharing",
+  "menuLocationTitle": "Let us find you faster",
+  "menuLocationBody": "Set your location to see delivery fees and the estimated time.",
+  "menuLocationSet": "Delivery location set",
+  "menuLocationCta": "Set location",
   "itemFromPrice": "From {price}",
   "@itemFromPrice": {"placeholders": {"price": {"type": "String"}}},
   "itemUnavailable": "Unavailable",
@@ -107,6 +116,7 @@
   "cartLineUnavailable": "No longer available",
 
   "locationTitle": "Delivery location",
+  "locationPrivacyNote": "We use your location only to calculate delivery fees and the estimated time.",
   "locationUseCurrent": "Use my current location",
   "locationFinding": "Finding your location...",
   "locationManualTitle": "Or enter coordinates",

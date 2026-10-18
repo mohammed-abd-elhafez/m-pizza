@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../api/models/cart_models.dart';
 import '../cart/cart_notifier.dart';
 import '../l10n/l10n.dart';
+import '../theme/app_theme.dart';
 import '../theme/common_widgets.dart';
 import 'location.dart';
 
@@ -98,6 +99,30 @@ class _LocationScreenState extends State<LocationScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Card(
+              color: const Color(0xFFFFE9D7),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CircleAvatar(
+                      backgroundColor: AppTheme.cheese,
+                      foregroundColor: AppTheme.ink,
+                      child: Icon(Icons.location_on_outlined),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l.locationPrivacyNote,
+                        style: const TextStyle(height: 1.35),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             FilledButton.icon(
               key: const Key('use-current'),
               onPressed: _finding ? null : _useCurrent,

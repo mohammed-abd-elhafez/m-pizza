@@ -104,6 +104,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuLoadFailed => 'We couldn\'t load the menu.';
 
   @override
+  String get menuHeroEyebrow => 'Fresh from the oven';
+
+  @override
+  String get menuHeroTitle => 'Pizza for your people';
+
+  @override
+  String get menuHeroBody =>
+      'Pick your favourites, customize your pizza, and make it yours.';
+
+  @override
+  String get menuHeroCta => 'Pick your pizza';
+
+  @override
+  String get menuFeatured => 'Made for sharing';
+
+  @override
+  String get menuLocationTitle => 'Let us find you faster';
+
+  @override
+  String get menuLocationBody =>
+      'Set your location to see delivery fees and the estimated time.';
+
+  @override
+  String get menuLocationSet => 'Delivery location set';
+
+  @override
+  String get menuLocationCta => 'Set location';
+
+  @override
   String itemFromPrice(String price) {
     return 'From $price';
   }
@@ -308,6 +337,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationTitle => 'Delivery location';
+
+  @override
+  String get locationPrivacyNote =>
+      'We use your location only to calculate delivery fees and the estimated time.';
 
   @override
   String get locationUseCurrent => 'Use my current location';

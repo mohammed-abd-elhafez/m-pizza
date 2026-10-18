@@ -103,6 +103,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get menuLoadFailed => 'تعذّر تحميل القائمة.';
 
   @override
+  String get menuHeroEyebrow => 'طازة من الفرن';
+
+  @override
+  String get menuHeroTitle => 'بيتزا تلمّ العيلة';
+
+  @override
+  String get menuHeroBody => 'اختار المكونات اللي بتحبها وخلي طلبك على مزاجك.';
+
+  @override
+  String get menuHeroCta => 'اختار بيتزتك';
+
+  @override
+  String get menuFeatured => 'اختياراتنا المميزة';
+
+  @override
+  String get menuLocationTitle => 'خلّينا نوصّل لك أسرع';
+
+  @override
+  String get menuLocationBody =>
+      'حدد موقعك لمعرفة رسوم التوصيل والوقت المتوقع.';
+
+  @override
+  String get menuLocationSet => 'موقع التوصيل محدد';
+
+  @override
+  String get menuLocationCta => 'حدد الموقع';
+
+  @override
   String itemFromPrice(String price) {
     return 'يبدأ من $price';
   }
@@ -304,6 +332,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get locationTitle => 'موقع التوصيل';
+
+  @override
+  String get locationPrivacyNote =>
+      'نستخدم موقعك لحساب رسوم التوصيل والوقت المتوقع فقط.';
 
   @override
   String get locationUseCurrent => 'استخدم موقعي الحالي';

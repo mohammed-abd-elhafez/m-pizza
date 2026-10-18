@@ -30,6 +30,15 @@
 
   "menuEmpty": "القائمة فارغة حاليًا.",
   "menuLoadFailed": "تعذّر تحميل القائمة.",
+  "menuHeroEyebrow": "طازة من الفرن",
+  "menuHeroTitle": "بيتزا تلمّ العيلة",
+  "menuHeroBody": "اختار المكونات اللي بتحبها وخلي طلبك على مزاجك.",
+  "menuHeroCta": "اختار بيتزتك",
+  "menuFeatured": "اختياراتنا المميزة",
+  "menuLocationTitle": "خلّينا نوصّل لك أسرع",
+  "menuLocationBody": "حدد موقعك لمعرفة رسوم التوصيل والوقت المتوقع.",
+  "menuLocationSet": "موقع التوصيل محدد",
+  "menuLocationCta": "حدد الموقع",
   "itemFromPrice": "يبدأ من {price}",
   "itemUnavailable": "غير متاح",
 
@@ -93,6 +102,7 @@
   "cartLineUnavailable": "لم يعد متاحًا",
 
   "locationTitle": "موقع التوصيل",
+  "locationPrivacyNote": "نستخدم موقعك لحساب رسوم التوصيل والوقت المتوقع فقط.",
   "locationUseCurrent": "استخدم موقعي الحالي",
   "locationFinding": "جارٍ تحديد موقعك...",
   "locationManualTitle": "أو أدخل الإحداثيات",

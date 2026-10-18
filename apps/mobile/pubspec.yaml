@@ -1,5 +1,5 @@
 name: mpizza_app
-description: "A new Flutter project."
+description: "Arabic-first customer app for M Pizza ordering and delivery."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -67,6 +67,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   generate: true
+
+  assets:
+    - assets/brand/
+    - assets/food/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
