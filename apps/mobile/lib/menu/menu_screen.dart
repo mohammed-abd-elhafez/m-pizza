@@ -77,33 +77,25 @@ class _MenuScreenState extends State<MenuScreen> {
                   const SizedBox(height: 16),
                   const _LocationBanner(),
                   const SizedBox(height: 24),
-                  Text(
-                    l.menuFeatured,
-                    style: Theme.of(context).textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (var i = 0; i < cats.length; i++)
-                        ChoiceChip(
-                          label: Text(cats[i].name(context.lang)),
-                          selected: i == index,
-                          onSelected: (_) => setState(() => _selected = i),
-                        ),
-                    ],
+                  _FeaturedHeader(
+                    title: l.menuFeatured,
+                    categories: cats,
+                    selectedIndex: index,
+                    onSelected: (value) => setState(() => _selected = value),
                   ),
                   const SizedBox(height: 8),
                   LayoutBuilder(
                     builder: (context, gridConstraints) {
-                      final twoColumns = gridConstraints.maxWidth >= 680;
-                      final gap = twoColumns ? 16.0 : 0.0;
-                      final cardWidth = twoColumns
-                          ? (gridConstraints.maxWidth - gap) / 2
-                          : gridConstraints.maxWidth;
+                      final columns = gridConstraints.maxWidth >= 720
+                          ? 3
+                          : gridConstraints.maxWidth >= 680
+                          ? 2
+                          : 1;
+                      final gap = columns == 1 ? 0.0 : 16.0;
+                      final cardWidth = columns == 1
+                          ? gridConstraints.maxWidth
+                          : (gridConstraints.maxWidth - (gap * (columns - 1))) /
+                                columns;
                       return Wrap(
                         spacing: gap,
                         runSpacing: 8,
@@ -113,6 +105,7 @@ class _MenuScreenState extends State<MenuScreen> {
                               width: cardWidth,
                               child: ItemCard(
                                 item: item,
+                                vertical: columns == 3,
                                 onTap: item.isAvailable
                                     ? () => Navigator.of(context).push(
                                         MaterialPageRoute<void>(
@@ -133,6 +126,74 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
         );
     }
+  }
+}
+
+class _FeaturedHeader extends StatelessWidget {
+  const _FeaturedHeader({
+    required this.title,
+    required this.categories,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final String title;
+  final List<MenuCategory> categories;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final direction = Directionality.of(context);
+    final constraints = BoxConstraints.tightForFinite(
+      width: MediaQuery.sizeOf(context).width,
+    );
+    final wide = constraints.maxWidth >= 680;
+    final titleWidget = Text(
+      title,
+      textAlign: TextAlign.start,
+      style: Theme.of(context).textTheme.headlineSmall
+          ?.copyWith(fontWeight: FontWeight.w900, fontSize: wide ? null : 22),
+    );
+    final chips = Wrap(
+      textDirection: direction,
+      alignment: WrapAlignment.start,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var i = 0; i < categories.length; i++)
+          ChoiceChip(
+            label: Text(categories[i].name(context.lang)),
+            selected: i == selectedIndex,
+            onSelected: (_) => onSelected(i),
+          ),
+      ],
+    );
+
+    if (wide) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(child: titleWidget),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: chips,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(alignment: AlignmentDirectional.centerStart, child: titleWidget),
+        const SizedBox(height: 12),
+        chips,
+      ],
+    );
   }
 }
 
@@ -318,9 +379,15 @@ class _LocationBanner extends StatelessWidget {
 }
 
 class ItemCard extends StatelessWidget {
-  const ItemCard({super.key, required this.item, this.onTap});
+  const ItemCard({
+    super.key,
+    required this.item,
+    this.vertical = false,
+    this.onTap,
+  });
 
   final MenuItem item;
+  final bool vertical;
   final VoidCallback? onTap;
 
   @override
@@ -329,79 +396,96 @@ class ItemCard extends StatelessWidget {
     final theme = Theme.of(context);
     final from = item.fromPricePiastres;
     final desc = item.description(context.lang);
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          item.name(context.lang),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        if (desc.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            desc,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              height: 1.25,
+            ),
+          ),
+        ],
+        const SizedBox(height: 10),
+        if (from != null)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.09),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              child: Text(
+                l.itemFromPrice(formatMoney(l, from)),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          )
+        else
+          Text(
+            l.itemUnavailable,
+            style: TextStyle(color: theme.colorScheme.error),
+          ),
+      ],
+    );
     return Card(
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
         child: Opacity(
           opacity: onTap == null ? 0.55 : 1,
           child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                _Thumb(item: item),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.all(vertical ? 12 : 10),
+            child: vertical
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        item.name(context.lang),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      if (desc.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          desc,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            height: 1.25,
+                      _Thumb(item: item, width: double.infinity, height: 156),
+                      const SizedBox(height: 12),
+                      details,
+                      if (onTap != null) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 18,
+                            color: theme.colorScheme.primary,
                           ),
                         ),
                       ],
-                      const SizedBox(height: 8),
-                      if (from != null)
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.09,
-                            ),
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 5,
-                            ),
-                            child: Text(
-                              l.itemFromPrice(formatMoney(l, from)),
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        Text(
-                          l.itemUnavailable,
-                          style: TextStyle(color: theme.colorScheme.error),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      _Thumb(item: item),
+                      const SizedBox(width: 14),
+                      Expanded(child: details),
+                      if (onTap != null)
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: theme.colorScheme.primary,
                         ),
                     ],
                   ),
-                ),
-                if (onTap != null)
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: theme.colorScheme.primary,
-                  ),
-              ],
-            ),
           ),
         ),
       ),
@@ -410,14 +494,17 @@ class ItemCard extends StatelessWidget {
 }
 
 class _Thumb extends StatelessWidget {
-  const _Thumb({required this.item});
+  const _Thumb({required this.item, this.width = 104, this.height = 104});
+
   final MenuItem item;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     final fallback = Container(
-      width: 104,
-      height: 104,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(18),
@@ -434,15 +521,15 @@ class _Thumb extends StatelessWidget {
             context: context,
             itemId: item.id,
             fallback: fallback,
-            width: 104,
-            height: 104,
+            width: width,
+            height: height,
           )
         : ClipRRect(
             borderRadius: BorderRadius.circular(18),
             child: Image.network(
               url,
-              width: 104,
-              height: 104,
+              width: width,
+              height: height,
               fit: BoxFit.cover,
               excludeFromSemantics: true,
               errorBuilder: (_, _, _) => fallback,
