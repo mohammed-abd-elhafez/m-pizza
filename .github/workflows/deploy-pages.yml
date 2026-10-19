@@ -38,7 +38,10 @@ jobs:
           flutter test
       - name: Build self-contained demo
         working-directory: apps/mobile
-        run: flutter build web --release --dart-define=DEMO=true --base-href "/${{ github.event.repository.name }}/"
+        run: flutter build web --release --source-maps --dart-define=DEMO=true --base-href "/${{ github.event.repository.name }}/"
+      - name: Keep Lighthouse source-map audit clean
+        working-directory: apps/mobile
+        run: sed -i '/sourceMappingURL=flutter.js.map/d' build/web/flutter.js
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

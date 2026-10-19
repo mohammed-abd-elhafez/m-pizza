@@ -46,6 +46,10 @@ The customer app asks for the device location only after the customer chooses de
 
 The customer app includes an original M Pizza mark and optimized local product photography under `apps/mobile/assets/`. Local assets keep the public demo fast and independent of an image CDN; production can replace the demo images with approved CMS URLs through the existing `imageUrl` field.
 
+### Web performance
+
+The GitHub Pages entry uses a progressive static shell: the public menu, product imagery and SEO content are available as semantic HTML immediately, while the full Flutter ordering experience is loaded when the visitor starts an order. This avoids making every visitor download and execute the full CanvasKit runtime before seeing the menu. Web-specific WebP assets live under `apps/mobile/web/assets-web/`, and Pages builds publish source maps while removing the Flutter runtime's missing source-map reference. The local Lighthouse acceptance target is 90+ in Performance, Accessibility, Best Practices and SEO.
+
 ## Security notes
 
 Money is integer piastres and always priced by the server; orders can only change status through the state machine (also

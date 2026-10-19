@@ -1,46 +1,369 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="إم بيتزا — اطلب بيتزتك وخصصها وحدد موقع التوصيل بسهولة.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFF8EE">
+  <meta name="description" content="إم بيتزا — اطلب بيتزتك، خصص وجبتك، وحدد موقع التوصيل بسهولة.">
+  <meta name="robots" content="index, follow">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="M Pizza">
+  <link rel="canonical" href="https://mohammed-abd-elhafez.github.io/m-pizza/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="M Pizza">
+  <meta property="og:title" content="M Pizza | بيتزا على مزاجك">
+  <meta property="og:description" content="اختار مكوناتك، خصص طلبك، وخلي إم بيتزا توصلك لحد بابك.">
+  <meta property="og:url" content="https://mohammed-abd-elhafez.github.io/m-pizza/">
+  <meta property="og:image" content="https://mohammed-abd-elhafez.github.io/m-pizza/assets/assets-web/hero-pizza.webp">
+  <meta property="og:image:alt" content="بيتزا M Pizza طازجة">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="M Pizza | بيتزا على مزاجك">
+  <meta name="twitter:description" content="اختار مكوناتك، خصص طلبك، وخلي إم بيتزا توصلك لحد بابك.">
+  <meta name="twitter:image" content="https://mohammed-abd-elhafez.github.io/m-pizza/assets/assets-web/hero-pizza.webp">
+
+  <link rel="preload" as="image" href="assets-web/hero-pizza.webp" fetchpriority="high">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>M Pizza</title>
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.json">
+  <title>M Pizza | بيتزا على مزاجك</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --cream: #fff8ee;
+      --paper: #ffffff;
+      --ink: #27211e;
+      --muted: #776b64;
+      --red: #c74634;
+      --deep-red: #8f2c24;
+      --soft-red: #ffe1db;
+      --gold: #f0c75e;
+      --line: rgba(39, 33, 30, .08);
+      font-family: Arial, Tahoma, sans-serif;
+      background: var(--cream);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--cream); }
+    body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--cream); color: var(--ink); }
+    button, a { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+    .web-shell {
+      min-height: 100vh;
+      padding: 0 20px 104px;
+    }
+
+    .web-shell__topbar,
+    .web-shell__content {
+      width: min(100%, 1120px);
+      margin-inline: auto;
+    }
+
+    .web-shell__topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      gap: 16px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--deep-red);
+      font-size: 22px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .brand img { width: 38px; height: 38px; object-fit: contain; }
+
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .topbar-link { color: var(--deep-red); font-weight: 700; text-decoration: none; }
+    .topbar-icon { color: var(--ink); font-size: 22px; line-height: 1; }
+
+    .hero {
+      position: relative;
+      min-height: 304px;
+      display: grid;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 28px;
+      background: var(--deep-red);
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(90deg, rgba(255,248,238,.96) 0%, rgba(255,248,238,.55) 38%, rgba(143,44,36,.72) 100%);
+    }
+
+    .hero__image { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+    .hero__copy { position: relative; z-index: 1; max-width: 530px; padding: 42px 48px; }
+    .eyebrow { margin: 0 0 8px; color: var(--gold); font-size: 14px; font-weight: 800; }
+    .hero h1 { margin: 0; color: var(--deep-red); font-size: clamp(32px, 5vw, 58px); line-height: 1.05; letter-spacing: -.04em; }
+    .hero p { max-width: 430px; margin: 14px 0 22px; color: var(--ink); font-size: clamp(15px, 2vw, 18px); line-height: 1.65; }
+
+    .primary-action,
+    .secondary-action {
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-weight: 800;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .primary-action { color: #fff; background: var(--red); box-shadow: 0 8px 20px rgba(143,44,36,.2); }
+    .secondary-action { color: var(--deep-red); background: var(--paper); border-color: var(--line); }
+    .primary-action:hover, .secondary-action:hover { transform: translateY(-2px); }
+
+    .location-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 18px;
+      padding: 16px 20px;
+      border: 1px solid rgba(199,70,52,.14);
+      border-radius: 18px;
+      background: #ffeadb;
+    }
+
+    .location-banner__copy { display: flex; align-items: center; gap: 12px; }
+    .location-banner__icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--gold); font-size: 22px; }
+    .location-banner strong, .location-banner span { display: block; }
+    .location-banner strong { font-size: 16px; }
+    .location-banner span { margin-top: 3px; color: var(--muted); font-size: 13px; }
+    .location-banner button { border: 0; color: var(--deep-red); background: transparent; font-weight: 800; }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 32px 0 14px;
+    }
+
+    .section-heading h2 { margin: 0; color: var(--ink); font-size: clamp(25px, 3vw, 34px); letter-spacing: -.03em; }
+    .section-heading p { margin: 0 0 3px; color: var(--muted); font-size: 14px; }
+
+    .categories { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-bottom: 16px; }
+    .category {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--paper);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .category[aria-pressed="true"] { border-color: transparent; color: var(--deep-red); background: var(--soft-red); }
+
+    .menu-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .menu-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      text-align: right;
+      color: var(--ink);
+      background: var(--paper);
+      box-shadow: 0 10px 28px rgba(93,45,27,.07);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .menu-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(93,45,27,.12); }
+    .menu-card__image { width: 100%; aspect-ratio: 1.55; object-fit: cover; border-radius: 16px; background: #f7ede2; }
+    .menu-card__body { display: flex; flex: 1; flex-direction: column; padding: 13px 4px 3px; }
+    .menu-card__title { display: block; margin: 0; font-size: 18px; }
+    .menu-card__description { display: block; min-height: 36px; margin: 5px 0 12px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .menu-card__footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+    .price { padding: 6px 9px; border-radius: 9px; color: var(--deep-red); background: #fff0eb; font-size: 13px; font-weight: 800; }
+    .card-cta { color: var(--red); font-size: 13px; font-weight: 800; }
+
+    .web-shell__footer { margin: 30px auto 0; color: var(--muted); text-align: center; font-size: 13px; }
+    .launching::after { content: "جاري فتح تطبيق الطلب..."; position: fixed; inset: auto 20px 20px; z-index: 10001; padding: 13px 16px; border-radius: 14px; color: #fff; background: var(--deep-red); box-shadow: 0 10px 30px rgba(0,0,0,.16); text-align: center; font-weight: 800; }
+
+    @media (max-width: 900px) {
+      .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 620px) {
+      .web-shell { padding-inline: 14px; }
+      .web-shell__topbar { min-height: 64px; }
+      .brand { font-size: 19px; }
+      .brand img { width: 32px; height: 32px; }
+      .topbar-link { font-size: 13px; }
+      .hero { min-height: 380px; border-radius: 22px; align-items: end; }
+      .hero::before { background: linear-gradient(180deg, rgba(143,44,36,.08) 0%, rgba(255,248,238,.96) 61%, var(--cream) 100%); }
+      .hero__copy { padding: 28px 22px 24px; }
+      .hero h1 { font-size: 38px; }
+      .hero p { margin: 10px 0 16px; font-size: 14px; }
+      .location-banner { align-items: flex-start; padding: 14px; }
+      .location-banner__copy { align-items: flex-start; }
+      .location-banner span { line-height: 1.5; }
+      .section-heading { align-items: flex-start; flex-direction: column; gap: 5px; margin-top: 26px; }
+      .categories { justify-content: flex-start; }
+      .menu-grid { grid-template-columns: 1fr; gap: 12px; }
+      .menu-card { display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 12px; padding: 10px; }
+      .menu-card__image { grid-row: 1; grid-column: 1; width: 108px; height: 108px; aspect-ratio: auto; }
+      .menu-card__body { grid-row: 1; grid-column: 2; padding: 3px 0; }
+      .menu-card__title { font-size: 16px; }
+      .menu-card__description { min-height: 0; margin-bottom: 8px; font-size: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <div id="web-shell" class="web-shell">
+    <header class="web-shell__topbar">
+      <a class="brand" href="./" aria-label="إم بيتزا - العودة إلى الصفحة الرئيسية">
+        <img src="assets-web/mpizza-mark.webp" width="38" height="38" alt="">
+        <span>إم بيتزا</span>
+      </a>
+      <nav class="topbar-actions" aria-label="روابط الموقع">
+        <a class="topbar-link" href="#menu">القائمة</a>
+        <button class="topbar-icon" type="button" data-launch-app aria-label="فتح تطبيق الطلب">⌁</button>
+      </nav>
+    </header>
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
+    <main class="web-shell__content">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero__image" src="assets-web/hero-pizza.webp" width="480" height="270" fetchpriority="high" decoding="async" alt="">
+        <div class="hero__copy">
+          <p class="eyebrow">طازة من الفرن</p>
+          <h1 id="hero-title">بيتزا تلم العيلة</h1>
+          <p>اختار المكونات اللي بتحبها، وخلّي طلبك على مزاجك من أول قضمة لآخر قطعة.</p>
+          <button class="primary-action" type="button" data-launch-app>ابدأ طلبك</button>
+        </div>
+      </section>
+
+      <section class="location-banner" aria-label="خدمة التوصيل حسب الموقع">
+        <div class="location-banner__copy">
+          <span class="location-banner__icon" aria-hidden="true">⌖</span>
+          <div>
+            <strong>خلّينا نوصل لك أسرع</strong>
+            <span>حدد موقعك لمعرفة رسوم التوصيل والوقت المتوقع.</span>
+          </div>
+        </div>
+        <button type="button" data-launch-app>حدد الموقع</button>
+      </section>
+
+      <section id="menu" aria-labelledby="menu-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="menu-title">اختياراتنا المميزة</h2>
+            <p>وصفات محبوبة ومكونات طازة كل يوم.</p>
+          </div>
+          <button class="secondary-action" type="button" data-launch-app>خصص طلبك</button>
+        </div>
+        <div id="categories" class="categories" role="group" aria-label="تصنيفات القائمة"></div>
+        <div id="menu-grid" class="menu-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="web-shell__footer">نسخة الويب السريعة — افتح التطبيق الكامل لإتمام الطلب والدفع.</footer>
+  </div>
+
+  <script>
+    (function () {
+      var categories = [
+        { id: 'pizza', label: 'البيتزا' },
+        { id: 'sides', label: 'المقبلات' },
+        { id: 'drinks', label: 'المشروبات' },
+        { id: 'desserts', label: 'الحلويات' }
+      ];
+      var items = {
+        pizza: [
+          ['مارجريتا', 'صلصة طماطم وجبنة موتزاريلا', 'يبدأ من 85 ج.م', 'assets-web/margherita.webp'],
+          ['بيبروني', 'بيبروني وجبنة موتزاريلا', 'يبدأ من 95 ج.م', 'assets-web/pepperoni.webp'],
+          ['سوبريم', 'بيبروني ومشروم وفلفل رومي وزيتون', 'يبدأ من 105 ج.م', 'assets-web/hero-pizza.webp'],
+          ['دجاج رانش', 'دجاج وصوص رانش وذرة', 'يبدأ من 100 ج.م', 'assets-web/pepperoni.webp'],
+          ['خضروات', 'مشروم وزيتون وفلفل رومي وذرة', 'يبدأ من 85 ج.م', 'assets-web/veggie.webp']
+        ],
+        sides: [
+          ['بطاطس مقرمشة', 'بطاطس ذهبية مع صوص مميز', 'يبدأ من 45 ج.م', 'assets-web/fries.webp'],
+          ['أصابع موتزاريلا', 'أصابع مقرمشة مع صوص طماطم', 'يبدأ من 60 ج.م', 'assets-web/mozzarella-sticks.webp'],
+          ['خبز بالثوم', 'شرائح خبز محمصة بالأعشاب', 'يبدأ من 40 ج.م', 'assets-web/garlic-bread.webp']
+        ],
+        drinks: [
+          ['Pepsi', 'مشروب غازي بارد', 'يبدأ من 25 ج.م', 'assets-web/cola.webp'],
+          ['Mirinda', 'مشروب برتقال بارد', 'يبدأ من 25 ج.م', 'assets-web/orange-soda.webp'],
+          ['مياه', 'مياه معدنية باردة', 'يبدأ من 15 ج.م', 'assets-web/water.webp']
+        ],
+        desserts: [
+          ['Brownie', 'براوني شوكولاتة غني وفادج', 'يبدأ من 55 ج.م', 'assets-web/brownie.webp']
+        ]
+      };
+      var activeCategory = 'pizza';
+      var shell = document.getElementById('web-shell');
+      var grid = document.getElementById('menu-grid');
+      var categoryRoot = document.getElementById('categories');
+      var flutterStarted = false;
+
+      function launchFlutter() {
+        if (flutterStarted) return;
+        flutterStarted = true;
+        shell.classList.add('launching');
+        window.addEventListener('flutter-first-frame', function () {
+          shell.remove();
+        }, { once: true });
+        var script = document.createElement('script');
+        script.src = 'flutter_bootstrap.js';
+        script.async = true;
+        document.body.appendChild(script);
+      }
+
+      function renderCategories() {
+        categoryRoot.replaceChildren();
+        categories.forEach(function (category) {
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'category';
+          button.textContent = category.label;
+          button.setAttribute('aria-pressed', String(category.id === activeCategory));
+          button.addEventListener('click', function () {
+            activeCategory = category.id;
+            renderCategories();
+            renderItems();
+          });
+          categoryRoot.appendChild(button);
+        });
+      }
+
+      function renderItems() {
+        grid.replaceChildren();
+        items[activeCategory].forEach(function (item) {
+          var card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'menu-card';
+          card.setAttribute('data-launch-app', '');
+          card.innerHTML = '<img class="menu-card__image" src="' + item[3] + '" width="480" height="480" loading="lazy" decoding="async" alt="' + item[0] + '">' +
+            '<span class="menu-card__body"><strong class="menu-card__title">' + item[0] + '</strong><span class="menu-card__description">' + item[1] + '</span><span class="menu-card__footer"><span class="price">' + item[2] + '</span><span class="card-cta">خصصها ←</span></span></span>';
+          card.addEventListener('click', launchFlutter);
+          grid.appendChild(card);
+        });
+      }
+
+      document.querySelectorAll('[data-launch-app]').forEach(function (element) {
+        element.addEventListener('click', launchFlutter);
+      });
+      renderCategories();
+      renderItems();
+    }());
+  </script>
 </body>
 </html>
