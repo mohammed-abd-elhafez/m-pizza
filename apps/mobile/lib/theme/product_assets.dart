@@ -13,6 +13,13 @@ class ProductAssets {
     3 => heroPizza,
     4 => 'assets/food/pepperoni.jpg',
     5 => 'assets/food/veggie.jpg',
+    6 => 'assets/food/fries.jpg',
+    7 => 'assets/food/mozzarella-sticks.jpg',
+    8 => 'assets/food/garlic-bread.jpg',
+    9 => 'assets/food/cola.jpg',
+    10 => 'assets/food/orange-soda.jpg',
+    11 => 'assets/food/water.jpg',
+    12 => 'assets/food/brownie.jpg',
     _ => null,
   };
 
