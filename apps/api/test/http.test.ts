@@ -470,10 +470,13 @@ describe("admin endpoints", () => {
 });
 
 describe("live tracking stream", () => {
-  const open = async (path: string): Promise<{ ws: WebSocket; messages: unknown[]; closed: Promise<number> }> => {
+  const open = async (
+    path: string,
+    origin?: string,
+  ): Promise<{ ws: WebSocket; messages: unknown[]; closed: Promise<number> }> => {
     if (!app.server.listening) await app.listen({ port: 0, host: "127.0.0.1" });
     const { port } = app.server.address() as AddressInfo;
-    const ws = new WebSocket(`ws://127.0.0.1:${port}${path}`);
+    const ws = new WebSocket(`ws://127.0.0.1:${port}${path}`, origin ? { headers: { origin } } : undefined);
     const messages: unknown[] = [];
     ws.on("message", (m) => messages.push(JSON.parse(m.toString())));
     const closed = new Promise<number>((resolve) => {
@@ -540,6 +543,13 @@ describe("live tracking stream", () => {
     await new Promise((r) => setTimeout(r, 100));
     events.publish({ trackingToken: "tracking-token-1", status: "READY", paymentStatus: "COD_PENDING" });
     expect(messages).toHaveLength(1);
+  });
+
+  it("refuses a cross-site browser origin before upgrading", async () => {
+    const customer = await loginCustomer();
+    await placed(customer);
+    const { closed } = await open("/orders/track/tracking-token-1/stream", "https://evil.example");
+    expect(await closed).toBe(403);
   });
 });
 

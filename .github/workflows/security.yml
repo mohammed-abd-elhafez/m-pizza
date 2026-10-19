@@ -1,0 +1,76 @@
+name: Security and API checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-security:
+    name: API typecheck, tests and security scan
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: apps/api
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
+      MIGRATION_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
+      OTP_SECRET: ci-only-secret-that-is-longer-than-32-characters
+      NODE_ENV: test
+      HOST: 127.0.0.1
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test with PostgreSQL integration coverage
+        run: npm test
+
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate
+
+      - name: Scan tracked files for high-confidence secret formats
+        working-directory: .
+        run: |
+          if git grep -nEI \
+            -e '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' \
+            -e 'AKIA[0-9A-Z]{16}' \
+            -e 'gh[pousr]_[A-Za-z0-9_]{20,}' \
+            -e 'xox[baprs]-[A-Za-z0-9-]{20,}' \
+            -- ':!**/package-lock.json' ':!**/*.lock'; then
+            echo "Potential secret material found in tracked files."
+            exit 1
+          fi

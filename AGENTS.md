@@ -3,7 +3,7 @@
 Pizza ordering system for one Egyptian restaurant: customer app (Flutter), kitchen board and admin (static web), API (Node). Arabic-first, COD-first. Clean-room: no Dodo code, names, copy or images.
 
 ## Project facts
-- API: `apps/api` - Node 24, TypeScript (strict), Fastify 4, zod 4, pg, vitest. PostgreSQL 17 (dev: portable binaries in `C:\dev\pgdata`, port 5432; start with `pg_ctl` from `C:\dev\pgdev\node_modules\@embedded-postgres\windows-x64\native\bin`).
+- API: `apps/api` - Node 24, TypeScript (strict), Fastify 5, zod 4, pg, vitest. PostgreSQL 17 (dev: portable binaries in `C:\dev\pgdata`, port 5432; start with `pg_ctl` from `C:\dev\pgdev\node_modules\@embedded-postgres\windows-x64\native\bin`).
 - Staff web: `apps/staff-web/public` (plain ES modules, no build). Served by the API at `/staff/` with a strict CSP: no inline scripts or styles, all customer-supplied text goes through `textContent` (see `js/dom.js`; `h()` refuses `innerHTML`).
 - Mobile: `apps/mobile` (Flutter, built against `docs/api.md`; see its README for release/security settings). SDK at `C:\dev\flutter`; only Chrome/web and tests can run here (no Android SDK). A release build requires an `https` API URL; test a local web build with `flutter build web --profile` and a static server on port 8080 (an allowed CORS origin).
 - DB: `db/migrations/*.sql` (numbered, immutable once applied, no BEGIN/COMMIT: the runner wraps each file atomically), `db/seed/*.sql` (demo menu, loaded only into an empty DB).
@@ -47,7 +47,7 @@ Integration tests create and drop a separate `mpizza_test` database; they skip w
 ## Operational hardening already in place
 - Server timeouts (headers 10 s, request 15 s), DB `statement_timeout` 10 s and `idle_in_transaction_session_timeout` 15 s, pool error handler, fail-fast on unhandled rejections, 10 s shutdown cap.
 - Security events (failed staff login, 401/403/429) are logged as structured JSON (`event: "security"`) without tokens, passwords or tracking tokens.
-- CI (`.github/workflows/ci.yml`) runs typecheck, tests on real Postgres, `npm audit`, gitleaks and the Flutter checks; Dependabot opens weekly update PRs.
+- CI (`.github/workflows/security.yml`) runs typecheck, tests on real Postgres, `npm audit` and a high-confidence tracked-secret scan; `.github/workflows/deploy-pages.yml` runs Flutter analyze/tests before publishing the demo.
 
 ## Known gaps / next
 - SMS provider for OTP (the server refuses `NODE_ENV=production` until one exists).

@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import { AppError } from "../../application/errors";
 import { placeOrder } from "../../application/place-order";
 import { startCheckout } from "../../application/payments";
@@ -13,6 +13,15 @@ const HEARTBEAT_MS = 30_000;
 /** A checkout page stays valid about an hour; do not open a second one while the first is recent. */
 const CHECKOUT_REUSE_MS = 10 * 60 * 1000;
 const WS_TRY_AGAIN_LATER = 1013;
+
+/** WebSocket upgrades do not use normal CORS checks, so validate the browser Origin explicitly. */
+function websocketOriginAllowed(req: FastifyRequest, allowedOrigins?: readonly string[]): boolean {
+  const origin = req.headers.origin;
+  if (typeof origin !== "string" || origin.length === 0) return true;
+  const sameOrigin = origin === `${req.protocol}://${req.headers.host}`;
+  if (sameOrigin) return true;
+  return allowedOrigins?.includes(origin) ?? false;
+}
 
 /** Customer-facing shape: the internal sequential id is never exposed. */
 const publicOrder = <T extends PlacedOrder | OrderView>({ id: _id, ...rest }: T): Omit<T, "id"> => rest;
@@ -97,6 +106,9 @@ export function orderRoutes(deps: AppDeps) {
       {
         websocket: true,
         preValidation: async (req) => {
+          if (!websocketOriginAllowed(req, deps.allowedOrigins)) {
+            throw new AppError("FORBIDDEN", "WebSocket origin is not allowed");
+          }
           const { token } = req.params as { token: string };
           const parsed = trackingTokenSchema.safeParse(token);
           if (!parsed.success || !(await deps.orders.findByToken(parsed.data))) {
