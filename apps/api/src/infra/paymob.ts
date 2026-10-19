@@ -2,20 +2,23 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Checkout, CheckoutRequest, PaymentGateway, WebhookEvent } from "../application/payment-ports";
 
 /**
- * Paymob "Accept" adapter (hosted iframe checkout).
+ * Paymob Egypt configuration.
  *
- * NOT YET VERIFIED AGAINST A LIVE ACCOUNT. The three request steps and endpoints below follow Paymob's classic
- * Accept flow as recalled by the author; Paymob's documentation site could not be fetched during development
- * (TLS certificate mismatch). The callback HMAC field order follows the published "Transaction Callbacks" page
- * as quoted by a search snippet. Before going live, run it against Paymob's sandbox and confirm: endpoint paths,
- * request fields, and the HMAC against a real callback.
+ * Intention mode is the current flow and supports multiple payment method integrations through Unified Checkout.
+ * Classic mode is retained only for existing merchants that still use the legacy iframe credentials.
  */
 export interface PaymobConfig {
-  readonly apiKey: string;
-  readonly integrationId: number;
-  readonly iframeId: number;
+  readonly mode?: "intention" | "classic";
+  readonly apiKey?: string;
+  readonly secretKey?: string;
+  readonly publicKey?: string;
+  readonly paymentMethodIds?: readonly number[];
+  readonly integrationId?: number;
+  readonly iframeId?: number;
   readonly hmacSecret: string;
   readonly baseUrl?: string;
+  readonly notificationUrl?: string;
+  readonly redirectionUrl?: string;
   readonly fetch?: typeof fetch;
 }
 
@@ -28,11 +31,19 @@ export const PAYMOB_HMAC_FIELDS = [
 
 const REQUEST_TIMEOUT_MS = 10_000;
 
+type JsonRecord = Record<string, unknown>;
+
+type IntentionResponse = {
+  client_secret?: unknown;
+  intention_order_id?: unknown;
+  id?: unknown;
+};
+
 function read(obj: unknown, path: string): string {
   let cur: unknown = obj;
   for (const part of path.split(".")) {
     if (cur === null || typeof cur !== "object") return "";
-    cur = (cur as Record<string, unknown>)[part];
+    cur = (cur as JsonRecord)[part];
   }
   return cur === null || cur === undefined ? "" : String(cur);
 }
@@ -43,11 +54,65 @@ export class PaymobGateway implements PaymentGateway {
   private readonly http: typeof fetch;
 
   constructor(private readonly cfg: PaymobConfig) {
-    this.base = cfg.baseUrl ?? "https://accept.paymob.com";
+    this.base = (cfg.baseUrl ?? "https://accept.paymob.com").replace(/\/$/, "");
     this.http = cfg.fetch ?? fetch;
   }
 
   async createCheckout(req: CheckoutRequest): Promise<Checkout> {
+    const mode = this.cfg.mode ?? (this.cfg.secretKey ? "intention" : "classic");
+    return mode === "intention" ? this.createIntentionCheckout(req) : this.createClassicCheckout(req);
+  }
+
+  private async createIntentionCheckout(req: CheckoutRequest): Promise<Checkout> {
+    if (!this.cfg.secretKey || !this.cfg.publicKey || !this.cfg.paymentMethodIds?.length || !this.cfg.notificationUrl) {
+      throw new Error("Paymob Intention API configuration is incomplete");
+    }
+
+    const intention = await this.post<IntentionResponse>(
+      "/v1/intention/",
+      {
+        amount: req.amountPiastres,
+        currency: "EGP",
+        payment_methods: this.cfg.paymentMethodIds,
+        items: [{ name: `M Pizza order ${req.merchantOrderId}`, amount: req.amountPiastres, quantity: 1 }],
+        billing_data: {
+          first_name: "M",
+          last_name: "Pizza",
+          email: "customer@mpizza.test",
+          phone_number: req.customerPhone,
+          street: "NA",
+          building: "NA",
+          floor: "NA",
+          apartment: "NA",
+          city: "Cairo",
+          country: "EGY",
+          state: "Cairo",
+        },
+        extras: { merchant_order_id: req.merchantOrderId },
+        special_reference: req.merchantOrderId,
+        expiration: 3600,
+        notification_url: this.cfg.notificationUrl,
+        ...(this.cfg.redirectionUrl ? { redirection_url: this.cfg.redirectionUrl } : {}),
+      },
+      { Authorization: `Token ${this.cfg.secretKey}` },
+    );
+
+    const clientSecret = typeof intention.client_secret === "string" ? intention.client_secret : "";
+    const providerRef = intention.intention_order_id ?? intention.id;
+    if (!clientSecret || (typeof providerRef !== "string" && typeof providerRef !== "number")) {
+      throw new Error("Paymob returned an incomplete payment intention");
+    }
+
+    const checkout = new URL("/unifiedcheckout/", this.base);
+    checkout.searchParams.set("publicKey", this.cfg.publicKey);
+    checkout.searchParams.set("clientSecret", clientSecret);
+    return { providerRef: String(providerRef), redirectUrl: checkout.toString() };
+  }
+
+  private async createClassicCheckout(req: CheckoutRequest): Promise<Checkout> {
+    if (!this.cfg.apiKey || !Number.isInteger(this.cfg.integrationId) || !Number.isInteger(this.cfg.iframeId)) {
+      throw new Error("Paymob Classic Accept configuration is incomplete");
+    }
     const auth = await this.post<{ token: string }>("/api/auth/tokens", { api_key: this.cfg.apiKey });
     const order = await this.post<{ id: number }>("/api/ecommerce/orders", {
       auth_token: auth.token,
@@ -65,8 +130,9 @@ export class PaymobGateway implements PaymentGateway {
       currency: "EGP",
       integration_id: this.cfg.integrationId,
       billing_data: {
-        first_name: "NA", last_name: "NA", email: "NA", phone_number: req.customerPhone, apartment: "NA", floor: "NA",
-        street: "NA", building: "NA", shipping_method: "NA", postal_code: "NA", city: "NA", country: "EG", state: "NA",
+        first_name: "NA", last_name: "NA", email: "customer@mpizza.test", phone_number: req.customerPhone,
+        apartment: "NA", floor: "NA", street: "NA", building: "NA", shipping_method: "NA", postal_code: "NA",
+        city: "Cairo", country: "EG", state: "NA",
       },
     });
     return {
@@ -77,7 +143,7 @@ export class PaymobGateway implements PaymentGateway {
 
   verifyWebhook(req: { rawBody: string; query: Readonly<Record<string, string | undefined>> }): WebhookEvent | null {
     const supplied = req.query["hmac"];
-    if (!supplied) return null;
+    if (!supplied || !/^[a-f0-9]{128}$/i.test(supplied)) return null;
 
     let body: { type?: unknown; obj?: unknown };
     try {
@@ -88,14 +154,17 @@ export class PaymobGateway implements PaymentGateway {
     const obj = body.obj;
     if (obj === null || typeof obj !== "object") return null;
 
-    const message = PAYMOB_HMAC_FIELDS.map((f) => read(obj, f)).join("");
+    const message = PAYMOB_HMAC_FIELDS.map((field) => read(obj, field)).join("");
     const expected = createHmac("sha512", this.cfg.hmacSecret).update(message).digest();
-    const given = Buffer.from(supplied.toLowerCase(), "hex");
+    const given = Buffer.from(supplied, "hex");
     if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
 
     // These fields are covered by the signature; reject callbacks that are not for this merchant's EGP transactions.
     if (body.type !== "TRANSACTION") return null;
-    if (read(obj, "currency") !== "EGP" || read(obj, "integration_id") !== String(this.cfg.integrationId)) return null;
+    if (read(obj, "currency") !== "EGP") return null;
+    const integrationId = Number(read(obj, "integration_id"));
+    if (this.cfg.integrationId !== undefined && integrationId !== this.cfg.integrationId) return null;
+    if (this.cfg.paymentMethodIds && !this.cfg.paymentMethodIds.includes(integrationId)) return null;
 
     const amount = Number(read(obj, "amount_cents"));
     const providerRef = read(obj, "order.id");
@@ -111,10 +180,10 @@ export class PaymobGateway implements PaymentGateway {
     };
   }
 
-  private async post<T>(path: string, body: unknown): Promise<T> {
+  private async post<T>(path: string, body: unknown, extraHeaders: Record<string, string> = {}): Promise<T> {
     const res = await this.http(`${this.base}${path}`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...extraHeaders },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });

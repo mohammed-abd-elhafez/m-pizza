@@ -4,10 +4,17 @@ export interface BrandConfig {
 }
 
 export interface PaymobSettings {
-  readonly apiKey: string;
-  readonly integrationId: number;
-  readonly iframeId: number;
+  readonly mode: "intention" | "classic";
+  readonly apiKey?: string;
+  readonly secretKey?: string;
+  readonly publicKey?: string;
+  readonly paymentMethodIds?: readonly number[];
+  readonly integrationId?: number;
+  readonly iframeId?: number;
   readonly hmacSecret: string;
+  readonly baseUrl: string;
+  readonly notificationUrl?: string;
+  readonly redirectionUrl?: string;
 }
 
 export interface ServerConfig {
@@ -34,19 +41,84 @@ export function loadBrand(env: Env = process.env): BrandConfig {
 const MIN_SECRET_LENGTH = 32;
 const LOOPBACK = new Set(["127.0.0.1", "localhost", "::1"]);
 
-function loadPaymob(env: Env): PaymobSettings | null {
-  const keys = ["PAYMOB_API_KEY", "PAYMOB_INTEGRATION_ID", "PAYMOB_IFRAME_ID", "PAYMOB_HMAC_SECRET"] as const;
-  const present = keys.filter((k) => env[k]);
-  if (present.length === 0) return null;
-  if (present.length !== keys.length) {
-    throw new Error(`Incomplete Paymob configuration: set all of ${keys.join(", ")} or none`);
+function exactHttpsUrl(name: string, value: string): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} must be a valid URL`);
   }
+  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || url.pathname !== "/") {
+    throw new Error(`${name} must be an https origin without credentials, path, query or hash`);
+  }
+  return url.origin;
+}
+
+function publicHttpsUrl(name: string, value: string): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} must be a valid URL`);
+  }
+  if (url.protocol !== "https:" || url.username || url.password || url.hash || url.hostname === "localhost" || url.hostname === "127.0.0.1") {
+    throw new Error(`${name} must be a public https URL without credentials or a hash`);
+  }
+  return url.toString();
+}
+
+function parsePaymentMethodIds(raw: string): number[] {
+  const values = raw.split(",").map((value) => Number(value.trim()));
+  if (values.length === 0 || values.some((value) => !Number.isInteger(value) || value <= 0)) {
+    throw new Error("PAYMOB_PAYMENT_METHOD_IDS must be a comma-separated list of positive integers");
+  }
+  return [...new Set(values)];
+}
+
+function loadPaymob(env: Env): PaymobSettings | null {
+  const paymobKeys = [
+    "PAYMOB_API_KEY", "PAYMOB_SECRET_KEY", "PAYMOB_PUBLIC_KEY", "PAYMOB_PAYMENT_METHOD_IDS",
+    "PAYMOB_INTEGRATION_ID", "PAYMOB_IFRAME_ID", "PAYMOB_HMAC_SECRET", "PAYMOB_NOTIFICATION_URL",
+    "PAYMOB_REDIRECTION_URL", "PAYMOB_MODE", "PAYMOB_BASE_URL",
+  ] as const;
+  if (!paymobKeys.some((key) => env[key])) return null;
+
+  const mode = env["PAYMOB_MODE"] ?? (env["PAYMOB_SECRET_KEY"] || env["PAYMOB_PUBLIC_KEY"] ? "intention" : "classic");
+  if (mode !== "intention" && mode !== "classic") throw new Error("PAYMOB_MODE must be intention or classic");
+  const hmacSecret = env["PAYMOB_HMAC_SECRET"];
+  if (!hmacSecret) throw new Error("Incomplete Paymob configuration: PAYMOB_HMAC_SECRET is required");
+  const baseUrl = exactHttpsUrl("PAYMOB_BASE_URL", env["PAYMOB_BASE_URL"] ?? "https://accept.paymob.com");
+
+  if (mode === "intention") {
+    const required = ["PAYMOB_SECRET_KEY", "PAYMOB_PUBLIC_KEY", "PAYMOB_PAYMENT_METHOD_IDS", "PAYMOB_NOTIFICATION_URL"] as const;
+    const missing = required.filter((key) => !env[key]);
+    if (missing.length > 0) throw new Error(`Incomplete Paymob intention configuration: set ${missing.join(", ")}`);
+    if (env["NODE_ENV"] !== "production" && [env["PAYMOB_SECRET_KEY"], env["PAYMOB_PUBLIC_KEY"]].some((key) => key?.includes("_live"))) {
+      throw new Error("Live Paymob keys are not allowed outside NODE_ENV=production");
+    }
+    return {
+      mode,
+      secretKey: env["PAYMOB_SECRET_KEY"],
+      publicKey: env["PAYMOB_PUBLIC_KEY"],
+      paymentMethodIds: parsePaymentMethodIds(env["PAYMOB_PAYMENT_METHOD_IDS"]!),
+      hmacSecret,
+      baseUrl,
+      notificationUrl: publicHttpsUrl("PAYMOB_NOTIFICATION_URL", env["PAYMOB_NOTIFICATION_URL"]!),
+      ...(env["PAYMOB_REDIRECTION_URL"]
+        ? { redirectionUrl: publicHttpsUrl("PAYMOB_REDIRECTION_URL", env["PAYMOB_REDIRECTION_URL"]) }
+        : {}),
+    };
+  }
+
+  const required = ["PAYMOB_API_KEY", "PAYMOB_INTEGRATION_ID", "PAYMOB_IFRAME_ID"] as const;
+  const missing = required.filter((key) => !env[key]);
+  if (missing.length > 0) throw new Error(`Incomplete Paymob classic configuration: set ${missing.join(", ")}`);
   const integrationId = Number(env["PAYMOB_INTEGRATION_ID"]);
   const iframeId = Number(env["PAYMOB_IFRAME_ID"]);
   if (!Number.isInteger(integrationId) || !Number.isInteger(iframeId)) {
     throw new Error("PAYMOB_INTEGRATION_ID and PAYMOB_IFRAME_ID must be integers");
   }
-  return { apiKey: env["PAYMOB_API_KEY"]!, integrationId, iframeId, hmacSecret: env["PAYMOB_HMAC_SECRET"]! };
+  return { mode, apiKey: env["PAYMOB_API_KEY"], integrationId, iframeId, hmacSecret, baseUrl };
 }
 
 function loadOrigins(raw: string | undefined): string[] {

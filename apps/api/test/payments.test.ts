@@ -165,4 +165,44 @@ describe("PaymobGateway.createCheckout", () => {
     const gw = new PaymobGateway({ apiKey: "K", integrationId: 1, iframeId: 2, hmacSecret: "s", fetch: failing });
     await expect(gw.createCheckout({ amountPiastres: 1, merchantOrderId: "m", customerPhone: "+201012345678" })).rejects.toThrow(/HTTP 502/);
   });
+
+  it("uses the current Intention API and builds a Unified Checkout URL", async () => {
+    const calls: { url: string; body: Record<string, unknown>; headers: Record<string, string> }[] = [];
+    const fakeFetch = (async (url: string, init: { body: string; headers: Record<string, string> }) => {
+      calls.push({ url, body: JSON.parse(init.body) as Record<string, unknown>, headers: init.headers });
+      return {
+        ok: true,
+        status: 201,
+        json: async () => ({ id: 77, intention_order_id: 321, client_secret: "csk_test_once" }),
+      };
+    }) as unknown as typeof fetch;
+
+    const gw = new PaymobGateway({
+      mode: "intention",
+      secretKey: "sk_test_key",
+      publicKey: "pk_test_key",
+      paymentMethodIds: [11, 12],
+      hmacSecret: "h",
+      notificationUrl: "https://api.example.com/payments/webhook/paymob",
+      redirectionUrl: "https://app.example.com/payment-result",
+      baseUrl: "https://accept.test",
+      fetch: fakeFetch,
+    });
+    const out = await gw.createCheckout({ amountPiastres: 20500, merchantOrderId: "m7-a", customerPhone: "+201012345678" });
+
+    expect(calls).toHaveLength(1);
+    expect(new URL(calls[0]!.url).pathname).toBe("/v1/intention/");
+    expect(calls[0]!.headers.Authorization).toBe("Token sk_test_key");
+    expect(calls[0]!.body).toMatchObject({
+      amount: 20500,
+      currency: "EGP",
+      payment_methods: [11, 12],
+      special_reference: "m7-a",
+      notification_url: "https://api.example.com/payments/webhook/paymob",
+    });
+    expect(out).toEqual({
+      providerRef: "321",
+      redirectUrl: "https://accept.test/unifiedcheckout/?publicKey=pk_test_key&clientSecret=csk_test_once",
+    });
+  });
 });

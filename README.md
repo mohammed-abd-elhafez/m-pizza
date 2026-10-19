@@ -54,8 +54,10 @@ database role; dependencies are audited in CI. Details and open items are in `AG
 
 ## Status
 
-Backend, staff web and the customer app are built and tested. Before real customers: an SMS provider for OTP, a Paymob sandbox
-run, real menu and branch data, hosting with TLS, and the legal items listed in `AGENTS.md`.
+Backend, staff web and the customer app are built and tested. Paymob is wired for the current Intention API + Unified Checkout
+flow, with Classic Accept kept as a compatibility fallback; before real customers, run a merchant-owned Paymob Test checkout and
+signed callback, connect an SMS provider for OTP, configure real menu and branch data, host the API with TLS, and complete the legal
+items listed in `AGENTS.md`.
 
 ## License
 

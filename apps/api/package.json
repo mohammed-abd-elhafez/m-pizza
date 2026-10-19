@@ -12,6 +12,7 @@
                     "test":  "vitest run --coverage",
                     "typecheck":  "tsc --noEmit",
                     "staff:upsert":  "tsx --env-file=.env.local src/cli/staff.ts",
+                    "paymob:smoke":  "tsx --env-file=.env.local scripts/paymob-smoke.ts",
                     "db:app-role":  "tsx --env-file=.env.local src/cli/db.ts app-role",
                     "audit":  "npm audit --audit-level=moderate"
                 },

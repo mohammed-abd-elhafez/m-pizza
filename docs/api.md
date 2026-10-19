@@ -73,9 +73,11 @@ Rules enforced server-side: half-and-half is pizza-only, both halves must have t
 - **Kitchen** (`kitchen` or `admin`): `GET /kitchen/orders?status=PLACED,ACCEPTED&branchId=&limit=100` (max 200) -> `{ orders: [{ id, status, service, paymentMethod, paymentStatus, totalPiastres, note, statusSince, lines: [{ qty, note, crust, halves: [{ half, item, size, toppings: [{ name, action }] }] }] }] }`; `POST /kitchen/orders/:id/transition { to, reason? }` (`reason` required for `CANCELLED`).
 - **Admin** (`admin` only): `GET/POST/PATCH /admin/items`, `PUT /admin/sizes/:id/price`, `GET /admin/toppings`, `PUT /admin/toppings/:id/{price|availability}`, `GET /admin/crusts`, `PUT /admin/crusts/:id/price`, `GET/POST/PATCH/DELETE /admin/zones`, `GET /admin/branches`, `PUT /admin/branches/:id/open`, `GET /admin/orders?date=&status=&limit=`, `GET /admin/reports/daily?date=YYYY-MM-DD` (Africa/Cairo day) -> `{ report: { date, orders: {status: n}, revenuePiastres, cod: { expectedPiastres, collectedPiastres, outstandingPiastres }, online: { paidPiastres, refundDuePiastres } } }` (`refundDuePiastres` = money received for orders that were cancelled or paid twice and must be returned; each case is also written to `audit_log` with outcome `attention`). Every write is recorded in `audit_log`.
 
-## Payments webhook
+## Payments and Paymob webhook
 
-`POST /payments/webhook/paymob?hmac=...` - called by the provider only. Authenticated by HMAC-SHA512; replays and duplicates are harmless; the order is marked `PAID` only if the signature verifies and the amount equals the order total. See `apps/api/src/infra/paymob.ts` (not yet verified against a live Paymob account).
+When Paymob is configured, the current integration uses the Egypt Intention API with Unified Checkout. `PAYMOB_PAYMENT_METHOD_IDS` can contain more than one Test Integration ID, allowing the hosted checkout to expose the enabled card, wallet or other methods for the merchant account. The older Classic Accept iframe flow remains available only with `PAYMOB_MODE=classic`.
+
+`POST /payments/webhook/paymob?hmac=...` is called by Paymob's server and must be reachable through a public HTTPS URL configured as `PAYMOB_NOTIFICATION_URL`; localhost cannot receive provider callbacks. The callback is authenticated by HMAC-SHA512, and replays/duplicates are harmless. The order is marked `PAID` only if the signature verifies and the amount equals the order total. Browser redirects are for user experience only and are never trusted for payment state. See `apps/api/src/infra/paymob.ts`; a real merchant Sandbox callback still needs to be verified with the owner's Paymob Test credentials.
 
 ## Staff web
 

@@ -34,9 +34,29 @@ describe("loadServerConfig", () => {
 
   it("enables Paymob only when fully configured", () => {
     const all = { PAYMOB_API_KEY: "k", PAYMOB_INTEGRATION_ID: "11", PAYMOB_IFRAME_ID: "22", PAYMOB_HMAC_SECRET: "h" };
-    expect(loadServerConfig({ ...ok, ...all }).paymob).toEqual({ apiKey: "k", integrationId: 11, iframeId: 22, hmacSecret: "h" });
+    expect(loadServerConfig({ ...ok, ...all }).paymob).toEqual({
+      mode: "classic", apiKey: "k", integrationId: 11, iframeId: 22, hmacSecret: "h", baseUrl: "https://accept.paymob.com",
+    });
     expect(() => loadServerConfig({ ...ok, PAYMOB_API_KEY: "k" })).toThrow(/Incomplete Paymob/);
     expect(() => loadServerConfig({ ...ok, ...all, PAYMOB_IFRAME_ID: "abc" })).toThrow(/integers/);
+  });
+
+  it("loads the current Intention API configuration and rejects live keys outside production", () => {
+    const intention = {
+      PAYMOB_MODE: "intention",
+      PAYMOB_SECRET_KEY: "sk_test_key",
+      PAYMOB_PUBLIC_KEY: "pk_test_key",
+      PAYMOB_PAYMENT_METHOD_IDS: "11, 12, 11",
+      PAYMOB_HMAC_SECRET: "h",
+      PAYMOB_NOTIFICATION_URL: "https://api.example.com/payments/webhook/paymob",
+      PAYMOB_REDIRECTION_URL: "https://app.example.com/payment-result",
+    };
+    expect(loadServerConfig({ ...ok, ...intention }).paymob).toMatchObject({
+      mode: "intention", secretKey: "sk_test_key", publicKey: "pk_test_key", paymentMethodIds: [11, 12],
+      notificationUrl: "https://api.example.com/payments/webhook/paymob",
+    });
+    expect(() => loadServerConfig({ ...ok, ...intention, PAYMOB_SECRET_KEY: "sk_live_key" })).toThrow(/Live Paymob keys/);
+    expect(() => loadServerConfig({ ...ok, ...intention, PAYMOB_NOTIFICATION_URL: "http://localhost:3000/webhook" })).toThrow(/public https/);
   });
 
   it("detects production", () => {
